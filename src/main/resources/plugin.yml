@@ -1,0 +1,6 @@
+name: CritHitTrain
+version: '${project.version}'
+main: ua.valeriihymchuk.crithittrain.Plugin
+api-version: 1.17
+commands:
+  hittrain:
