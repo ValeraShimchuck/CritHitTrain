@@ -1,23 +1,35 @@
 package ua.valeriihymchuk.crithittrain.mob.handler;
 
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import ua.valeriihymchuk.crithittrain.Plugin;
 import ua.valeriihymchuk.crithittrain.mob.MobManager;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.util.HashMap;
+
 public class DamageHandler implements Listener {
     private final MobManager manager;
+
+    private final HashMap<Player, Long> lastDamage = new HashMap<>();
 
     public DamageHandler(MobManager manager) {
         this.manager = manager;
     }
 
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onCombust(EntityCombustEvent event) {
         if(!manager.isPluginMob(event.getEntity())) return;
         event.setCancelled(true);
@@ -34,18 +46,40 @@ public class DamageHandler implements Listener {
     public void onPlayerDamage(EntityDamageByEntityEvent event) {
         if(!(event.getDamager() instanceof Player damager)) return;
         if(!manager.isPluginMob(event.getEntity())) return;
-        float attackStrength = damager.getCooledAttackStrength(0);
-        if(attackStrength != 1.0f) {
+        double damage = 1;
+        damage += damager.getInventory().getItemInMainHand().getType().getItemAttributes(EquipmentSlot.HAND)
+                .get(Attribute.GENERIC_ATTACK_DAMAGE).stream().mapToDouble(AttributeModifier::getAmount).sum();
+        DecimalFormat df = new DecimalFormat("#.#");
+        df.setRoundingMode(RoundingMode.HALF_UP);
+        if(damage > Double.parseDouble(df.format(event.getDamage()).replace(",", "."))) {
             damager.sendMessage("Кулдаун предмета еще не прошел");
         } else {
-            if(isCritical(damager)) damager.sendMessage("Ты ударил критом!");
+            if(isCritical(damager)) {
+                double lastDamage = getLastDamageTime(damager);
+                if(lastDamage < 0) damager.sendMessage("Твой первый крит!");
+                else {
+                    damager.sendMessage("Ты ударил критом! За " + lastDamage + " s");
+                }
+                logCritical(damager);
+            }
             else damager.sendMessage("Ты ударил не критом!");
         }
+
+        damager.sendMessage(String.valueOf(Double.parseDouble(df.format(event.getDamage()).replace(",", "."))));
     }
 
-    public boolean isCritical(Player p) {
+    private boolean isCritical(Player p) {
         if(p.isOnGround()) return false;
         return (p.getVelocity().getY() + 0.0784000015258789) <= 0;
+    }
+
+    private double getLastDamageTime(Player p) {
+        return ((double) (System.currentTimeMillis() - lastDamage.getOrDefault(p, System.currentTimeMillis() +1))) / 1000;
+    }
+
+    private void logCritical(Player p) {
+        if(lastDamage.containsKey(p)) lastDamage.replace(p, System.currentTimeMillis());
+        else lastDamage.put(p, System.currentTimeMillis());
     }
 
 }
