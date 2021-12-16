@@ -49,7 +49,7 @@ public class DamageHandler implements Listener {
         double itemDamage = 1;
         itemDamage += damager.getInventory().getItemInMainHand().getType().getItemAttributes(EquipmentSlot.HAND)
                 .get(Attribute.GENERIC_ATTACK_DAMAGE).stream().mapToDouble(AttributeModifier::getAmount).sum();
-        if(itemDamage > Double.parseDouble(df.format(event.getDamage()).replace(",", "."))) {
+        if(itemDamage > damage) {
             damager.sendMessage("Кулдаун предмета еще не прошел");
         } else {
             if(damage > itemDamage) {
@@ -63,7 +63,7 @@ public class DamageHandler implements Listener {
             else damager.sendMessage("Ты ударил не критом!");
         }
 
-        damager.sendMessage(String.valueOf(Double.parseDouble(df.format(event.getDamage()).replace(",", "."))));
+        damager.sendMessage(String.valueOf(damage));
     }
 
 
