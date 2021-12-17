@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 public class AdminCommands implements CommandExecutor {
 
-    private Plugin plugin;
+    private final Plugin plugin;
 
     public AdminCommands(Plugin plugin) {
         this.plugin = plugin;
@@ -28,7 +28,7 @@ public class AdminCommands implements CommandExecutor {
     private Entity getLookingAt(Player player) {
         return player.getNearbyEntities(10, 10, 10).stream()
                 .filter(player::hasLineOfSight)
-                .max(new DistanceComparator(player))
+                .min(new DistanceComparator(player))
                 .orElse(null);
     }
 

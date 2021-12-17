@@ -4,6 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 import ua.valeriihymchuk.crithittrain.command.AdminCommands;
+import ua.valeriihymchuk.crithittrain.command.PlayerCommands;
 import ua.valeriihymchuk.crithittrain.common.Manager;
 import ua.valeriihymchuk.crithittrain.common.config.ConfigLoader;
 import ua.valeriihymchuk.crithittrain.config.configs.Config;
@@ -37,6 +38,7 @@ public final class Plugin extends JavaPlugin {
 
     private void loadCommands() {
         getCommand("hittrain").setExecutor(new AdminCommands(this));
+        getCommand("pushtrain").setExecutor(new PlayerCommands());
     }
 
 
